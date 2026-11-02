@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070711" />
+  <meta name="description" content="MEMORY//VOID — a cinematic, story-driven flight through the last dream in the universe." />
+  <title>MEMORY//VOID — The Last Lullaby</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/styles.css" />
+  <script type="importmap">
+    {"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <main id="game-shell">
+    <canvas id="world" aria-label="MEMORY VOID 3D game world" tabindex="0"></canvas>
+    <div class="art-wash"></div><div class="vignette"></div><div class="scanlines"></div><div class="grain"></div>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">◈</span><span>MEMORY<span class="brand-light"> // VOID</span></span><span class="brand-divider"></span><span class="chapter-brand">THE LAST LULLABY</span></div>
+      <div class="top-right"><span class="signal"><i></i> SIGNAL FOUND</span><button id="sound-toggle" class="icon-button" title="Toggle sound" aria-label="Toggle sound">♫</button></div>
+    </header>
+
+    <section id="hud" class="hud hidden">
+      <div class="hud-topline"><span id="act-label">CHAPTER 01 / 03 — GLASS MERIDIAN</span><span id="story-line">“Somewhere, someone remembers me.”</span><span id="mission-label">RECOVER 5 ECHOES</span></div>
+      <div class="hud-main">
+        <div class="hud-left"><span class="eyebrow">FLIGHT TIME</span><strong id="distance">00:00</strong></div>
+        <div class="hud-center"><span class="eyebrow">MEMORY FRAGMENTS</span><strong><i>✦</i> <b id="shards">0</b><small> / 5</small></strong></div>
+        <div class="hud-right"><span class="eyebrow">HULL INTEGRITY</span><strong id="integrity-value">100%</strong><div class="energy-track"><i id="integrity-bar"></i></div></div>
+      </div>
+      <div id="boss-hud" class="boss-hud hidden"><div class="boss-name-row"><span id="boss-name">THE CHOIR</span><span id="boss-status">CORE EXPOSED</span></div><div class="boss-track"><i id="boss-bar"></i></div></div>
+      <div class="ability"><span class="ability-key">SPACE</span><span>PHASE SHIFT</span><i id="ability-meter"></i><span class="ability-key weapon-key">J</span><span>PULSE</span></div>
+    </section>
+
+    <section id="start-screen" class="screen active">
+      <div class="hero-copy">
+        <div class="edition"><span class="edition-line"></span> A CINEMATIC STORY FLIGHT <span class="edition-line"></span></div>
+        <h1>THE LAST<br><span>LULLABY.</span></h1>
+        <div class="title-rule"><span>01—03</span><i></i><span>AN INTERSTELLAR GRIEF MACHINE</span></div>
+        <p class="intro-copy">The universe has gone silent. Somewhere in its ruins,<br>your sister is still trying to say your name.</p>
+        <div class="hero-actions"><button id="play-button" class="primary-button"><span>BEGIN THE JOURNEY</span><b>↗</b></button><button id="continue-button" class="continue-button hidden">CONTINUE SIGNAL <span>→</span></button></div>
+        <div class="control-legend"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> FLIGHT</span><span><kbd>J</kbd> FIRE PULSE</span><span><kbd>SPACE</kbd> PHASE SHIFT</span></div>
+      </div>
+      <div class="story-stamp"><span class="stamp-orbit">✳</span><div><b>THREE WORLDS</b><small>ONE VOICE LEFT</small></div></div>
+      <aside class="dreamwright-card">
+        <div class="card-orbit"><span class="orbit-dot"></span><span class="orbit-core">✳</span></div>
+        <div class="eyebrow purple">GEMINI DREAMWRIGHT · OPTIONAL</div>
+        <h2>Rewrite the<br>dream between acts.</h2>
+        <p>Describe a world. Gemini invents its palette and changes how your ship flies.</p>
+        <div class="key-row"><input id="api-key" type="password" autocomplete="off" placeholder="Gemini API key" aria-label="Gemini API key"/><button id="save-key" title="Save key on this device">SAVE</button></div>
+        <div class="prompt-row"><input id="dream-prompt" maxlength="160" placeholder="A city orbiting a dying star…" aria-label="Describe a world"/><button id="dream-button" title="Dream a reality">↗</button></div>
+        <div id="ai-status" class="ai-status">Story mode does not need an API key.</div>
+      </aside>
+      <div class="bottom-note"><span>ONE PILOT · ONE SHIP · ONE IMPOSSIBLE PROMISE</span><span>HEADPHONES RECOMMENDED&nbsp; ◉</span></div>
+    </section>
+
+    <section id="story-screen" class="screen hidden"><div class="story-card"><div class="story-index" id="story-index">SIGNAL / 01</div><div class="story-emblem">◈</div><div class="story-location" id="story-location">GLASS MERIDIAN</div><h2 id="story-title">The star that kept your name.</h2><div id="story-copy" class="story-copy"></div><div class="story-speaker" id="story-speaker">MARA VENN · PILOT OF THE LARK</div><button id="story-button" class="primary-button"><span id="story-button-label">ENTER THE MEMORY</span><b>↗</b></button></div></section>
+    <section id="pause-screen" class="screen hidden small-screen"><div class="modal-card"><div class="eyebrow">FLIGHT RECORDER ON HOLD</div><h2>THE SIGNAL<br>IS STILL THERE.</h2><p>Take a breath. The stars can wait.</p><button id="resume-button" class="primary-button"><span>RETURN TO FLIGHT</span><b>↗</b></button><div class="modal-hint">PRESS ESC TO RESUME</div></div></section>
+    <section id="over-screen" class="screen hidden small-screen"><div class="modal-card"><div class="eyebrow">SIGNAL LOST · FLIGHT RECORDER RECOVERED</div><h2>NOT THIS<br>TIME, MARA.</h2><p id="death-copy">The dark took the stars. It cannot take the memory.</p><button id="again-button" class="primary-button"><span>REPLAY THIS MEMORY</span><b>↗</b></button><div class="modal-hint">THE LARK REMEMBERS THE WAY</div></div></section>
+    <footer class="footer"><span>MEMORY//VOID <i>·</i> BUILD 002.01</span><span id="footer-tip">WASD FLIGHT &nbsp;·&nbsp; J PULSE &nbsp;·&nbsp; SPACE PHASE</span><span>THE LAST LULLABY</span></footer>
+  </main>
+  <script type="module" src="src/game.js"></script>
+</body>
+</html>

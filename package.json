@@ -1,0 +1,51 @@
+{
+  "name": "memory-void",
+  "version": "0.3.0",
+  "description": "A cinematic 3D story flight through the last dream in the universe.",
+  "main": "electron/main.cjs",
+  "author": "Afterimage",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^40.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "studio.afterimage.memoryvoid",
+    "productName": "MEMORY VOID",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "src/**/*",
+      "electron/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Memory-Void-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MEMORY VOID"
+    }
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  }
+}
