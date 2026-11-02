@@ -36,3 +36,6 @@ npm run dist:win
 The installer is written to `dist/`. GitHub Actions builds the installer on each `v*` tag and attaches the `.exe` to that GitHub Release. Push this repository to GitHub, then push a tag such as `v0.3.0` to publish a downloadable installer.
 
 The current release target is Windows x64 with WebGL 2 support. The installer is not code-signed, so Windows may display an unknown-publisher notice.
+
+## Output:
+<img width="1917" height="907" alt="image" src="https://github.com/user-attachments/assets/37dff7f2-ee90-4257-91c2-e9fe34417640" />
