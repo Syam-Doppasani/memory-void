@@ -12,14 +12,14 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
     { name:'CATHEDRAL OF TIDES', boss:'THE MOTHER', palette:['#74ffd2','#49aaff','#ff83d2'], location:'An ocean suspended inside a bell.', intro:'The Lark descends through a sea with no shore. Below it, a cathedral rings without sound.', middle:'I remember this place. Anya made me promise we would never be alone here.', outro:'The bell finally rings. A thousand lost memories move like fish through the water.', line:'“I kept your voice alive.”', mode:1 },
     { name:'THE WHITE STATIC', boss:'THE SILENCE', palette:['#ffebac','#ff966e','#f8f4ff'], location:'Beyond the edge of every remembered world.', intro:'Nothing remains ahead but the silence that ate the sky. The signal is strongest there.', middle:'It is not a monster. It is the last place where I put my grief.', outro:'Mara reaches for the voice inside the white. For once, the universe listens.', line:'“Now choose what the universe remembers.”', mode:2 }
   ];
+  const paletteOf=(c)=>({a:c.palette[0],b:c.palette[1],c:c.palette[2]});
   let chapterIndex=0,chapter=chapters[0],theme=paletteOf(chapter),modifier='standard',aiName='',aiOmen='';
-  let renderer,composer,scene,camera,clock,ship,shipLight,bossRoot,bossCore,bossRing,starField,sparkField;
+  let renderer,composer,scene,camera,clock,ship,shipLight,bossRoot,bossCore,bossRing,starField,sparkField,titleBackdrop,nebulaGroup;
   let state='menu',storyBeat='intro',time=0,actTime=0,score=0,shards=0,hull=100,speed=30,phaseLeft=0,phaseCooldown=0,fireCooldown=0,bossTime=0,attackTime=0,shake=0,muted=false;
   let entities=[],shots=[],enemyShots=[],sparks=[],keys=Object.create(null),musicTimer=null,audio=null;
   let rings=[],city=[],eyes=[],cameraShake=new THREE.Vector3();
   const screens={menu:$('start-screen'),story:$('story-screen'),pause:$('pause-screen'),over:$('over-screen')};
-  const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  const paletteOf=(c)=>({a:c.palette[0],b:c.palette[1],c:c.palette[2]});
+  const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),mix=(a,b,t)=>a+(b-a)*t;
   const campaignSaved=()=>Number(localStorage.getItem('mv-campaign')||'1');
 
   try {
@@ -37,7 +37,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
   renderer.setSize(innerWidth,innerHeight,false);
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.22;
+  renderer.toneMappingExposure=1.05;
   renderer.setClearColor(0x060710,1);
   scene=new THREE.Scene();scene.background=new THREE.Color(0x060710);scene.fog=new THREE.FogExp2(0x070713,.0042);
   camera=new THREE.PerspectiveCamera(66,innerWidth/innerHeight,.1,260);
@@ -45,8 +45,8 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
   const ambient=new THREE.HemisphereLight(0x9ab6ff,0x17111f,1.4);scene.add(ambient);
   const keyLight=new THREE.PointLight(0x78dfff,180,100,1.5);keyLight.position.set(-12,10,-10);scene.add(keyLight);
   const pinkLight=new THREE.PointLight(0xc05aff,150,95,1.5);pinkLight.position.set(14,-5,-32);scene.add(pinkLight);
-  const shipLamp=new THREE.PointLight(0x7cfaff,36,32,2);scene.add(shipLamp);
-  const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.92,.62,.17);
+  shipLight=new THREE.PointLight(0x7cfaff,36,32,2);scene.add(shipLight);
+  const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.52,.42,.24);
   composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(bloom);
   clock=new THREE.Clock();
 
@@ -86,9 +86,17 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
   function makeSparkField(){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(5000*3),3));geo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(5000*3),3));
     const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:.21,sizeAttenuation:true,transparent:true,opacity:1,vertexColors:true,blending:THREE.AdditiveBlending,depthWrite:false}));scene.add(pts);sparkField=pts;}
   function makeBackdrop() {
-    new THREE.TextureLoader().load('assets/title-art.png',texture=>{texture.colorSpace=THREE.SRGBColorSpace;const plane=new THREE.Mesh(new THREE.PlaneGeometry(175,98),new THREE.MeshBasicMaterial({map:texture,color:0x77728d,transparent:true,opacity:.34,depthWrite:false}));plane.position.set(0,3,-118);scene.add(plane);});
-    const planet=new THREE.Mesh(new THREE.SphereGeometry(10,48,40),new THREE.MeshStandardMaterial({color:0x20203e,metalness:.42,roughness:.75,emissive:0x391969,emissiveIntensity:.45}));planet.position.set(-34,22,-75);scene.add(planet);
-    const halo=new THREE.Mesh(new THREE.TorusGeometry(12,.09,10,96),new THREE.MeshBasicMaterial({color:0xe58aff,transparent:true,opacity:.7,blending:THREE.AdditiveBlending}));halo.scale.set(1.5,.36,1);halo.position.copy(planet.position);halo.rotation.x=.26;scene.add(halo);
+    titleBackdrop=new THREE.Group();scene.add(titleBackdrop);
+    new THREE.TextureLoader().load('assets/title-art.png',texture=>{texture.colorSpace=THREE.SRGBColorSpace;const plane=new THREE.Mesh(new THREE.PlaneGeometry(175,98),new THREE.MeshBasicMaterial({map:texture,color:0x77728d,transparent:true,opacity:.34,depthWrite:false}));plane.position.set(0,3,-118);titleBackdrop.add(plane);});
+    const planet=new THREE.Mesh(new THREE.SphereGeometry(10,48,40),new THREE.MeshStandardMaterial({color:0x20203e,metalness:.42,roughness:.75,emissive:0x391969,emissiveIntensity:.45}));planet.position.set(-34,22,-75);titleBackdrop.add(planet);
+    const halo=new THREE.Mesh(new THREE.TorusGeometry(12,.09,10,96),new THREE.MeshBasicMaterial({color:0xe58aff,transparent:true,opacity:.7,blending:THREE.AdditiveBlending}));halo.scale.set(1.5,.36,1);halo.position.copy(planet.position);halo.rotation.x=.26;titleBackdrop.add(halo);
+  }
+  function makeNebula() {
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const ctx=canvas.getContext('2d'),grad=ctx.createRadialGradient(128,128,8,128,128,128);
+    grad.addColorStop(0,'rgba(255,255,255,.72)');grad.addColorStop(.22,'rgba(255,255,255,.38)');grad.addColorStop(.58,'rgba(255,255,255,.10)');grad.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=grad;ctx.fillRect(0,0,256,256);
+    const tex=new THREE.CanvasTexture(canvas);nebulaGroup=new THREE.Group();scene.add(nebulaGroup);
+    const colors=[0x397bff,0x9b45ff,0x24d7c9,0xff4eae,0x4368d9];
+    for(let i=0;i<18;i++){const mat=new THREE.SpriteMaterial({map:tex,color:colors[i%colors.length],transparent:true,opacity:.15+(i%4)*.025,blending:THREE.AdditiveBlending,depthWrite:false});const cloud=new THREE.Sprite(mat);const scale=rand(24,54);cloud.scale.set(scale*1.55,scale,1);cloud.position.set(rand(-62,62),rand(-34,34),rand(-175,-78));cloud.userData.drift=rand(.5,1.35)*(i%2?1:-1);cloud.userData.phase=rand(0,Math.PI*2);nebulaGroup.add(cloud);}
   }
   function makeTunnelAndCity() {
     rings=[];city=[];
@@ -97,7 +105,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
       rg.position.z=-12-i*9;rg.rotation.z=i*.025;scene.add(rg);rings.push(rg);
     }
     for(let i=0;i<78;i++){
-      const g=new THREE.Group(),side=i%2?1:-1,depth=-rand(12,200),x=side*rand(15,37),h=rand(4,19),w=rand(1.3,5.2);
+      const g=new THREE.Group(),side=i%2?1:-1,depth=-rand(26,220),x=side*rand(22,46),h=rand(3,12),w=rand(.8,2.8);
       let mesh;
       if(chapters[chapterIndex].mode===0){mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,w*rand(.55,1.3)),new THREE.MeshStandardMaterial({color:0x13132a,metalness:.8,roughness:.38,emissive:theme.b,emissiveIntensity:.12}));}
       else if(chapters[chapterIndex].mode===1){mesh=new THREE.Mesh(new THREE.CylinderGeometry(w*.2,w*.65,h,7,2),new THREE.MeshStandardMaterial({color:0x101b31,metalness:.55,roughness:.4,emissive:theme.a,emissiveIntensity:.1}));}
@@ -110,7 +118,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
   function resetEnvironment(){for(const r of rings)scene.remove(r);for(const c of city)scene.remove(c);scene.remove(starField);scene.remove(sparkField);makeStars();makeSparkField();makeTunnelAndCity();applyPalette();}
   function paletteChange(){theme=window.aiDream?.theme||paletteOf(chapter);scene.fog.color.set(theme.b);ambient.color.set(theme.a);keyLight.color.set(theme.a);pinkLight.color.set(theme.b);resetEnvironment();buildShipTheme();}
   function buildShipTheme(){ship?.traverse(n=>{if(n.material?.userData.phaseShield)n.material.color.set(theme.a);if(n.userData.enginePlume||n.userData.engineInner){n.material.color.set(n.userData.engineInner?0xfff5d9:theme.a);}if(n.material?.emissive&&n.material.emissiveIntensity<.5)n.material.emissive.set(theme.b);});}
-  ship=makeShip();makeStars();makeSparkField();makeBackdrop();makeTunnelAndCity();
+  ship=makeShip();makeStars();makeSparkField();makeBackdrop();makeNebula();makeTunnelAndCity();
 
   function createEntity(type,x,y,z) {
     const g=new THREE.Group();let radius;
@@ -153,8 +161,10 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
   function phaseShift(){if(state!=='playing'||phaseLeft>0||phaseCooldown>0)return;phaseLeft=modifier==='long-phase'?1.1:.68;phaseCooldown=modifier==='long-phase'?1.35:2.2;ship.children.find(n=>n.userData.phaseShield).visible=true;sfx('phase');}
 
   function update3D(dt){time+=dt;const moving=state==='playing'?1:state==='story'?.12:.025,drive=(modifier==='overdrive'?1.22:1)*speed*moving;
+    const inFlight=$('game-shell').classList.contains('playing');titleBackdrop.visible=!inFlight;nebulaGroup.visible=inFlight;
+    nebulaGroup.children.forEach((cloud,i)=>{cloud.position.x+=cloud.userData.drift*dt;if(cloud.position.x>76)cloud.position.x=-76;if(cloud.position.x<-76)cloud.position.x=76;cloud.position.y+=Math.sin(time*.22+cloud.userData.phase)*dt*.7;cloud.material.rotation+=dt*(i%2?.012:-.009);});
     rings.forEach((r,i)=>{r.position.z+=drive*dt*.78;if(r.position.z>20)r.position.z-=234;r.rotation.z+=dt*(i%2?-.012:.009);});
-    city.forEach((c,i)=>{c.position.z+=drive*dt*c.userData.drift;if(c.position.z>22){c.position.z=-207-rand(0,16);c.position.x=Math.sign(c.position.x)*rand(15,38);}});
+    city.forEach((c,i)=>{c.position.z+=drive*dt*c.userData.drift;if(c.position.z>22){c.position.z=-227-rand(0,16);c.position.x=Math.sign(c.position.x)*rand(22,46);}});
     const positions=starField.geometry.attributes.position.array;for(let i=0;i<positions.length;i+=3){positions[i+2]+=drive*dt*1.65;if(positions[i+2]>17){positions[i+2]=-208;positions[i]=rand(-85,85);positions[i+1]=rand(-48,48);}}starField.geometry.attributes.position.needsUpdate=true;
     if(state==='playing'){
       actTime+=dt;score+=dt*(75+chapterIndex*8);fireCooldown=Math.max(0,fireCooldown-dt);phaseCooldown=Math.max(0,phaseCooldown-dt);phaseLeft=Math.max(0,phaseLeft-dt);
