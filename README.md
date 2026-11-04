@@ -39,3 +39,9 @@ The current release target is Windows x64 with WebGL 2 support. The installer is
 
 ## Output:
 <img width="1917" height="907" alt="image" src="https://github.com/user-attachments/assets/37dff7f2-ee90-4257-91c2-e9fe34417640" />
+
+
+## Small Game Play
+
+https://lnkd.in/p/d4xy3hkq
+
